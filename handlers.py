@@ -43,7 +43,7 @@ def _file_entity(row: dict, pinned_ids: set[str] | None = None) -> DriveFile:
 
 @chat.function("connect_google_drive", "Connect another Google account to Google Drive.",
                action_type="write", effects=["oauth.connect"],
-               event="google-drive-connector.account.updated", data_model=SettingResult)
+               event="google-drive-connector-bluebee.account.updated", data_model=SettingResult)
 async def connect_google_drive(ctx, params: NoParams) -> ActionResult:
     """Return the platform-owned Google authorization URL."""
     url = await ctx.oauth_authorize_url("google")
@@ -73,7 +73,7 @@ async def list_accounts(ctx, params: ListAccountsParams) -> ActionResult:
 
 @chat.function("switch_account", "Change the active Google Drive account used by default.",
                action_type="write", effects=["account.active.update"],
-               event="google-drive-connector.account.updated", data_model=SettingResult)
+               event="google-drive-connector-bluebee.account.updated", data_model=SettingResult)
 async def switch_account(ctx, params: AccountParam) -> ActionResult:
     """Select one connected Google account as the default."""
     out = await accounts.activate(ctx, params.account)
@@ -190,7 +190,7 @@ async def read_sheet_range(ctx, params: ReadSheetRangeParams) -> ActionResult:
 
 @chat.function("pin_file", "Pin or unpin a Drive file in Imperal without changing Google Drive.",
                action_type="write", effects=["pin.update"],
-               event="google-drive-connector.pin.updated", data_model=SettingResult)
+               event="google-drive-connector-bluebee.pin.updated", data_model=SettingResult)
 async def pin_file(ctx, params: PinFileParams) -> ActionResult:
     """Change only the Imperal pin record; never mutate Google Drive."""
     resolved = await _resolved(ctx, params.account)
@@ -227,7 +227,7 @@ async def list_pinned_files(ctx, params: ListPinnedParams) -> ActionResult:
 
 @chat.function("set_context_permission", "Enable or disable explicit Drive context permission for one account.",
                action_type="write", effects=["context.permission.update"],
-               event="google-drive-connector.context.updated", data_model=SettingResult)
+               event="google-drive-connector-bluebee.context.updated", data_model=SettingResult)
 async def set_context_permission(ctx, params: SetContextParams) -> ActionResult:
     """Persist explicit per-account context permission in Imperal."""
     resolved = await _resolved(ctx, params.account)

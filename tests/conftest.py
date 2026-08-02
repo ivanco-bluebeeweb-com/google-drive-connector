@@ -43,7 +43,7 @@ class QueueHTTP:
 
 @pytest.fixture
 def ctx():
-    context = MockContext(extension_id="google-drive-connector")
+    context = MockContext(extension_id="google-drive-connector-bluebee")
     context.http = QueueHTTP()
     context.secrets = MockSecretStore({
         "google_client_id": "client-id",

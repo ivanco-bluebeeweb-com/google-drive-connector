@@ -36,7 +36,7 @@ def _file_item(row: dict, account: str):
 
 @ext.panel("drive_nav", slot="left", title="Google Drive", icon="HardDrive",
            default_width=280, min_width=220, max_width=400,
-           refresh="on_event:google-drive-connector.account.updated")
+           refresh="on_event:google-drive-connector-bluebee.account.updated")
 async def drive_nav(ctx, account="", **kwargs):
     docs = await accounts.all_accounts(ctx)
     if not docs:

@@ -1,7 +1,7 @@
 {
   "manifest_schema_version": 3,
   "sdk_version": "5.9.13",
-  "app_id": "google-drive-connector",
+  "app_id": "google-drive-connector-bluebee",
   "version": "0.1.0",
   "name": "Google Drive Connector",
   "description": "Search, browse and read files available to connected Google accounts, including Shared drives and bounded Google Sheets ranges.",
@@ -121,7 +121,7 @@
         "type": "object",
         "x-sdl": "entity"
       },
-      "event": "google-drive-connector.account.updated",
+      "event": "google-drive-connector-bluebee.account.updated",
       "background": false,
       "long_running": false,
       "scopes": [],
@@ -424,7 +424,7 @@
         "type": "object",
         "x-sdl": "entity"
       },
-      "event": "google-drive-connector.account.updated",
+      "event": "google-drive-connector-bluebee.account.updated",
       "background": false,
       "long_running": false,
       "scopes": [],
@@ -1955,7 +1955,7 @@
         "type": "object",
         "x-sdl": "entity"
       },
-      "event": "google-drive-connector.pin.updated",
+      "event": "google-drive-connector-bluebee.pin.updated",
       "background": false,
       "long_running": false,
       "scopes": [],
@@ -2316,7 +2316,7 @@
         "type": "object",
         "x-sdl": "entity"
       },
-      "event": "google-drive-connector.context.updated",
+      "event": "google-drive-connector-bluebee.context.updated",
       "background": false,
       "long_running": false,
       "scopes": [],
@@ -2377,7 +2377,7 @@
       "title": "Google Drive",
       "tree": {},
       "icon": "HardDrive",
-      "refresh": "on_event:google-drive-connector.account.updated",
+      "refresh": "on_event:google-drive-connector-bluebee.account.updated",
       "center_overlay": false,
       "default_width": 280,
       "min_width": 220,
