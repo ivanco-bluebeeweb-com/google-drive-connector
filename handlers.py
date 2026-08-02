@@ -54,6 +54,12 @@ async def connect_google_drive(ctx, params: NoParams) -> ActionResult:
             retryable=False,
             code="GOOGLE_OAUTH_NOT_CONFIGURED",
         )
+    if client_id == client_secret:
+        return ActionResult.error(
+            "Google Client ID and Client Secret contain the same value. Save each credential in its matching Secrets field before connecting.",
+            retryable=False,
+            code="GOOGLE_OAUTH_CREDENTIALS_DUPLICATED",
+        )
     url = await ctx.oauth_authorize_url("google")
     return _success(SettingResult(id="google", title="Google OAuth", account="", enabled=True,
                                   action=url), "Open the Google authorization link to connect Drive.")
