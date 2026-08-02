@@ -45,7 +45,15 @@ def _file_entity(row: dict, pinned_ids: set[str] | None = None) -> DriveFile:
                action_type="write", effects=["oauth.connect"],
                event="google-drive-connector-bluebee.account.updated", data_model=SettingResult)
 async def connect_google_drive(ctx, params: NoParams) -> ActionResult:
-    """Return the platform-owned Google authorization URL."""
+    """Return the platform-owned Google authorization URL when OAuth is configured."""
+    client_id = await ctx.secrets.get("google_client_id")
+    client_secret = await ctx.secrets.get("google_client_secret")
+    if not client_id or not client_secret:
+        return ActionResult.error(
+            "Google OAuth is not configured yet. The app owner must save its Google client ID and client secret in the app's Secrets before an account can connect.",
+            retryable=False,
+            code="GOOGLE_OAUTH_NOT_CONFIGURED",
+        )
     url = await ctx.oauth_authorize_url("google")
     return _success(SettingResult(id="google", title="Google OAuth", account="", enabled=True,
                                   action=url), "Open the Google authorization link to connect Drive.")
