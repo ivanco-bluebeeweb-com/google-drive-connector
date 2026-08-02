@@ -71,15 +71,22 @@ async def list_accounts(ctx, params: ListAccountsParams) -> ActionResult:
     """List connected accounts and optionally verify their Drive access."""
     rows = []
     for doc in await accounts.all_accounts(ctx):
-        data = doc.data or {}; email = str(data.get("email") or "")
+        data = doc.data or {}
+        email = accounts.account_email(doc)
+        label = accounts.account_label(doc)
         settings = await accounts.setting(ctx, email)
         state = str(settings.get("state") or "connected")
         checked = str(settings.get("last_checked") or "")
-        if params.refresh:
+        if accounts.identity_missing(doc):
+            state = "reconnect_required"
+            email = ""
+        elif params.refresh:
             verified = await accounts.verify(ctx, doc)
             state = "connected" if verified.get("ok") else "error"
             checked = str(verified.get("last_checked") or checked)
-        rows.append(DriveAccount(id=doc.id, title=email or "Google account", email=email,
+            email = str(verified.get("email") or email)
+            label = email or label
+        rows.append(DriveAccount(id=doc.id, title=label, email=email,
                                  active=bool(data.get("is_active")), state=state,
                                  context_enabled=bool(settings.get("context_enabled")), last_checked=checked))
     return _success(DriveAccountList(items=rows), f"Found {len(rows)} connected Google account(s).")

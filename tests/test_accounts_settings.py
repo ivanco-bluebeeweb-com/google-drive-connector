@@ -57,6 +57,20 @@ def test_unknown_oauth_identity_has_reconnect_label():
 
 
 @pytest.mark.asyncio
+async def test_list_accounts_never_exposes_unknown_as_account_name(ctx):
+    await ctx.store.create(accounts.ACCOUNTS, {
+        "email": "unknown", "access_token": "access-token", "is_active": True,
+    })
+
+    result = await handlers.list_accounts(ctx, handlers.ListAccountsParams(refresh=False))
+    item = result.data.items[0]
+
+    assert item.title == "Google account needs reconnecting"
+    assert item.email == ""
+    assert item.state == "reconnect_required"
+
+
+@pytest.mark.asyncio
 async def test_verify_repairs_unknown_identity_from_drive_about(ctx):
     doc = await ctx.store.create(accounts.ACCOUNTS, {
         "email": "unknown", "access_token": "access-token", "is_active": True,
