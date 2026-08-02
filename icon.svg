@@ -1,7 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 87.3 78" role="img" aria-labelledby="title">
   <title id="title">Google Drive</title>
-  <path fill="#0F9D58" d="M22 8h13l18 31H40z"/>
-  <path fill="#4285F4" d="M16 50l7-12h30l-7 12z"/>
-  <path fill="#F4B400" d="M22 8l7 12-13 23-7-12z"/>
-  <path fill="#34A853" d="M16 43l7-12 7 12-7 12z" opacity=".92"/>
+  <path fill="#0F9D58" d="M6.6 66.6 27.3 30.8h41.4L48 66.6z"/>
+  <path fill="#4285F4" d="M48 66.6 68.7 30.8 87.3 63c1.5 2.6-.4 5.8-3.4 5.8H48z"/>
+  <path fill="#F4B400" d="M27.3 30.8 39.5 9.7c1.5-2.6 5.2-2.6 6.7 0l22.5 39H27.3z"/>
+  <path fill="#0F9D58" d="m6.6 66.6 20.7-35.8L6.6 66.6z"/>
+  <path fill="#0F9D58" d="M.9 63 21.6 27.2l10.4 18L12.2 79c-3 .1-4.8-3.3-3.3-6z"/>
 </svg>

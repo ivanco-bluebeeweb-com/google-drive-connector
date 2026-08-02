@@ -2326,7 +2326,7 @@
   "signals": [],
   "schedules": [],
   "required_scopes": [],
-  "icon_size_bytes": 361,
+  "icon_size_bytes": 519,
   "oauth": [
     {
       "provider": "google",
