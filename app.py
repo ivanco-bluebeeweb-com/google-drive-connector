@@ -7,8 +7,8 @@ ext = Extension(
     version="0.1.3",
     display_name="Google Drive Connector",
     description=(
-        "Search, browse and read files available to connected Google accounts, "
-        "including Shared drives and bounded Google Sheets ranges."
+        "PAUSED — Google OAuth/API limitations currently prevent a reliable "
+        "Google Drive connection. Development is on hold."
     ),
     icon="icon.svg",
     capabilities=["google-drive:read", "google-drive:settings"],

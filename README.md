@@ -1,5 +1,7 @@
 # Google Drive Connector
 
+> **Status: PAUSED — do not continue development.** Google OAuth/API limitations currently prevent the connector from establishing a reliable, usable Google Drive connection. The project is retained for reference only until those platform/API constraints change.
+
 Read-only Google Drive context for Webbee: connect Google accounts through the platform OAuth flow, search accessible files, browse My Drive and Shared drives, preview bounded text, read an explicit Google Sheets range, pin important files in Imperal, and opt in to general Drive context per account.
 
 ## Product boundaries
