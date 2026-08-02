@@ -1,0 +1,2 @@
+imperal-sdk>=5.9.13
+pydantic>=2.0

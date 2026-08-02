@@ -1,0 +1,2396 @@
+{
+  "manifest_schema_version": 3,
+  "sdk_version": "5.9.13",
+  "app_id": "google-drive-connector",
+  "version": "0.1.0",
+  "name": "Google Drive Connector",
+  "description": "Search, browse and read files available to connected Google accounts, including Shared drives and bounded Google Sheets ranges.",
+  "icon": "icon.svg",
+  "actions_explicit": true,
+  "system": false,
+  "capabilities": [
+    "google-drive:read",
+    "google-drive:settings"
+  ],
+  "tools": [
+    {
+      "name": "connect_google_drive",
+      "description": "Connect another Google account to Google Drive.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "oauth.connect"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {},
+        "title": "NoParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "account": {
+            "default": "",
+            "title": "Account",
+            "type": "string"
+          },
+          "enabled": {
+            "default": false,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "action": {
+            "default": "",
+            "title": "Action",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "SettingResult",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "google-drive-connector.account.updated",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "google_drive"
+    },
+    {
+      "name": "list_accounts",
+      "description": "List connected Google Drive accounts and connection state.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "refresh": {
+            "default": false,
+            "description": "Verify each account against Google Drive",
+            "title": "Refresh",
+            "type": "boolean"
+          }
+        },
+        "title": "ListAccountsParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "DriveAccount": {
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "title": "Id"
+              },
+              "title": {
+                "title": "Title",
+                "type": "string"
+              },
+              "kind": {
+                "default": "",
+                "title": "Kind",
+                "type": "string"
+              },
+              "subtitle": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Subtitle"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Status"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "email": {
+                "default": "",
+                "title": "Email",
+                "type": "string"
+              },
+              "provider": {
+                "default": "google",
+                "title": "Provider",
+                "type": "string"
+              },
+              "active": {
+                "default": false,
+                "title": "Active",
+                "type": "boolean"
+              },
+              "state": {
+                "default": "connected",
+                "title": "State",
+                "type": "string"
+              },
+              "context_enabled": {
+                "default": false,
+                "title": "Context Enabled",
+                "type": "boolean"
+              },
+              "last_checked": {
+                "default": "",
+                "title": "Last Checked",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ],
+            "title": "DriveAccount",
+            "type": "object",
+            "x-sdl": "entity"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/DriveAccount"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Page"
+          },
+          "has_more": {
+            "default": false,
+            "title": "Has More",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "DriveAccountList",
+        "type": "object",
+        "x-sdl": "entity-list"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "google_drive"
+    },
+    {
+      "name": "switch_account",
+      "description": "Change the active Google Drive account used by default.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "account.active.update"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "account": {
+            "default": "",
+            "description": "Connected Google account email",
+            "title": "Account",
+            "type": "string"
+          }
+        },
+        "title": "AccountParam",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "account": {
+            "default": "",
+            "title": "Account",
+            "type": "string"
+          },
+          "enabled": {
+            "default": false,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "action": {
+            "default": "",
+            "title": "Action",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "SettingResult",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "google-drive-connector.account.updated",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "google_drive"
+    },
+    {
+      "name": "check_access",
+      "description": "Verify what the selected Google account can read in Drive.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "account": {
+            "default": "",
+            "description": "Connected Google account email",
+            "title": "Account",
+            "type": "string"
+          }
+        },
+        "title": "AccountParam",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "email": {
+            "default": "",
+            "title": "Email",
+            "type": "string"
+          },
+          "can_read_files": {
+            "default": false,
+            "title": "Can Read Files",
+            "type": "boolean"
+          },
+          "shared_drives_visible": {
+            "default": 0,
+            "title": "Shared Drives Visible",
+            "type": "integer"
+          },
+          "context_enabled": {
+            "default": false,
+            "title": "Context Enabled",
+            "type": "boolean"
+          },
+          "explanation": {
+            "default": "",
+            "title": "Explanation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "AccessReport",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "google_drive"
+    },
+    {
+      "name": "search_files",
+      "description": "Search accessible Google Drive files by name or indexed content.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "account": {
+            "default": "",
+            "description": "Connected Google account email. Omit when only one account is connected.",
+            "title": "Account",
+            "type": "string"
+          },
+          "query": {
+            "default": "",
+            "description": "Text in the file name or full-text index",
+            "title": "Query",
+            "type": "string"
+          },
+          "file_type": {
+            "default": "",
+            "description": "Optional type: folder, document, spreadsheet, presentation, pdf, office, image",
+            "title": "File Type",
+            "type": "string"
+          },
+          "source": {
+            "default": "all",
+            "description": "Source: all, my_drive, or shared_drives",
+            "title": "Source",
+            "type": "string"
+          },
+          "modified_after": {
+            "default": "",
+            "description": "Optional ISO date, e.g. 2026-08-01",
+            "title": "Modified After",
+            "type": "string"
+          },
+          "limit": {
+            "default": 25,
+            "description": "Maximum files to return",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "page_token": {
+            "default": "",
+            "description": "Continuation token from the previous page",
+            "title": "Page Token",
+            "type": "string"
+          }
+        },
+        "title": "SearchFilesParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "DriveFile": {
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "title": "Id"
+              },
+              "title": {
+                "title": "Title",
+                "type": "string"
+              },
+              "kind": {
+                "default": "",
+                "title": "Kind",
+                "type": "string"
+              },
+              "subtitle": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Subtitle"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Status"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "file_id": {
+                "default": "",
+                "title": "File Id",
+                "type": "string"
+              },
+              "mime_type": {
+                "default": "",
+                "title": "Mime Type",
+                "type": "string"
+              },
+              "file_type": {
+                "default": "",
+                "title": "File Type",
+                "type": "string"
+              },
+              "modified_time": {
+                "default": "",
+                "title": "Modified Time",
+                "type": "string"
+              },
+              "created_time": {
+                "default": "",
+                "title": "Created Time",
+                "type": "string"
+              },
+              "size": {
+                "default": 0,
+                "title": "Size",
+                "type": "integer"
+              },
+              "owner": {
+                "default": "",
+                "title": "Owner",
+                "type": "string"
+              },
+              "parent_ids": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Parent Ids",
+                "type": "array"
+              },
+              "drive_id": {
+                "default": "",
+                "title": "Drive Id",
+                "type": "string"
+              },
+              "web_view_link": {
+                "default": "",
+                "title": "Web View Link",
+                "type": "string"
+              },
+              "thumbnail_link": {
+                "default": "",
+                "title": "Thumbnail Link",
+                "type": "string"
+              },
+              "is_folder": {
+                "default": false,
+                "title": "Is Folder",
+                "type": "boolean"
+              },
+              "pinned": {
+                "default": false,
+                "title": "Pinned",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ],
+            "title": "DriveFile",
+            "type": "object",
+            "x-sdl": "entity"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/DriveFile"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Page"
+          },
+          "has_more": {
+            "default": false,
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "next_page_token": {
+            "default": "",
+            "title": "Next Page Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "DriveFileList",
+        "type": "object",
+        "x-sdl": "entity-list"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "google_drive"
+    },
+    {
+      "name": "browse_folder",
+      "description": "List one Google Drive folder level, including Shared drives.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "account": {
+            "default": "",
+            "description": "Connected Google account email. Omit when only one account is connected.",
+            "title": "Account",
+            "type": "string"
+          },
+          "folder": {
+            "default": "root",
+            "description": "Folder id; 'root' opens My Drive",
+            "title": "Folder",
+            "type": "string"
+          },
+          "drive_id": {
+            "default": "",
+            "description": "Shared drive id when browsing a Shared drive",
+            "title": "Drive Id",
+            "type": "string"
+          },
+          "limit": {
+            "default": 50,
+            "description": "Maximum children to return",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "page_token": {
+            "default": "",
+            "description": "Continuation token from the previous page",
+            "title": "Page Token",
+            "type": "string"
+          }
+        },
+        "title": "BrowseFolderParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "DriveFile": {
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "title": "Id"
+              },
+              "title": {
+                "title": "Title",
+                "type": "string"
+              },
+              "kind": {
+                "default": "",
+                "title": "Kind",
+                "type": "string"
+              },
+              "subtitle": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Subtitle"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Status"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "file_id": {
+                "default": "",
+                "title": "File Id",
+                "type": "string"
+              },
+              "mime_type": {
+                "default": "",
+                "title": "Mime Type",
+                "type": "string"
+              },
+              "file_type": {
+                "default": "",
+                "title": "File Type",
+                "type": "string"
+              },
+              "modified_time": {
+                "default": "",
+                "title": "Modified Time",
+                "type": "string"
+              },
+              "created_time": {
+                "default": "",
+                "title": "Created Time",
+                "type": "string"
+              },
+              "size": {
+                "default": 0,
+                "title": "Size",
+                "type": "integer"
+              },
+              "owner": {
+                "default": "",
+                "title": "Owner",
+                "type": "string"
+              },
+              "parent_ids": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Parent Ids",
+                "type": "array"
+              },
+              "drive_id": {
+                "default": "",
+                "title": "Drive Id",
+                "type": "string"
+              },
+              "web_view_link": {
+                "default": "",
+                "title": "Web View Link",
+                "type": "string"
+              },
+              "thumbnail_link": {
+                "default": "",
+                "title": "Thumbnail Link",
+                "type": "string"
+              },
+              "is_folder": {
+                "default": false,
+                "title": "Is Folder",
+                "type": "boolean"
+              },
+              "pinned": {
+                "default": false,
+                "title": "Pinned",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ],
+            "title": "DriveFile",
+            "type": "object",
+            "x-sdl": "entity"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/DriveFile"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Page"
+          },
+          "has_more": {
+            "default": false,
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "next_page_token": {
+            "default": "",
+            "title": "Next Page Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "DriveFileList",
+        "type": "object",
+        "x-sdl": "entity-list"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "google_drive"
+    },
+    {
+      "name": "list_shared_drives",
+      "description": "List Shared drives available to a connected Google account.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "account": {
+            "default": "",
+            "description": "Connected Google account email. Omit when only one account is connected.",
+            "title": "Account",
+            "type": "string"
+          },
+          "query": {
+            "default": "",
+            "description": "Optional Shared drive name fragment",
+            "title": "Query",
+            "type": "string"
+          },
+          "limit": {
+            "default": 50,
+            "description": "Maximum Shared drives to return",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "page_token": {
+            "default": "",
+            "description": "Continuation token from the previous page",
+            "title": "Page Token",
+            "type": "string"
+          }
+        },
+        "title": "ListSharedDrivesParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "SharedDrive": {
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "title": "Id"
+              },
+              "title": {
+                "title": "Title",
+                "type": "string"
+              },
+              "kind": {
+                "default": "",
+                "title": "Kind",
+                "type": "string"
+              },
+              "subtitle": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Subtitle"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Status"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "drive_id": {
+                "default": "",
+                "title": "Drive Id",
+                "type": "string"
+              },
+              "created_time": {
+                "default": "",
+                "title": "Created Time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ],
+            "title": "SharedDrive",
+            "type": "object",
+            "x-sdl": "entity"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/SharedDrive"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Page"
+          },
+          "has_more": {
+            "default": false,
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "next_page_token": {
+            "default": "",
+            "title": "Next Page Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "SharedDriveList",
+        "type": "object",
+        "x-sdl": "entity-list"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "google_drive"
+    },
+    {
+      "name": "get_file",
+      "description": "Read metadata for one accessible Google Drive file or folder.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "account": {
+            "default": "",
+            "description": "Connected Google account email. Omit when only one account is connected.",
+            "title": "Account",
+            "type": "string"
+          },
+          "file_id": {
+            "description": "Google Drive file id from search or browse results",
+            "title": "File Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_id"
+        ],
+        "title": "FileParam",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "file_id": {
+            "default": "",
+            "title": "File Id",
+            "type": "string"
+          },
+          "mime_type": {
+            "default": "",
+            "title": "Mime Type",
+            "type": "string"
+          },
+          "file_type": {
+            "default": "",
+            "title": "File Type",
+            "type": "string"
+          },
+          "modified_time": {
+            "default": "",
+            "title": "Modified Time",
+            "type": "string"
+          },
+          "created_time": {
+            "default": "",
+            "title": "Created Time",
+            "type": "string"
+          },
+          "size": {
+            "default": 0,
+            "title": "Size",
+            "type": "integer"
+          },
+          "owner": {
+            "default": "",
+            "title": "Owner",
+            "type": "string"
+          },
+          "parent_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Parent Ids",
+            "type": "array"
+          },
+          "drive_id": {
+            "default": "",
+            "title": "Drive Id",
+            "type": "string"
+          },
+          "web_view_link": {
+            "default": "",
+            "title": "Web View Link",
+            "type": "string"
+          },
+          "thumbnail_link": {
+            "default": "",
+            "title": "Thumbnail Link",
+            "type": "string"
+          },
+          "is_folder": {
+            "default": false,
+            "title": "Is Folder",
+            "type": "boolean"
+          },
+          "pinned": {
+            "default": false,
+            "title": "Pinned",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "DriveFile",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "google_drive"
+    },
+    {
+      "name": "read_file",
+      "description": "Read bounded text from a Google Doc, Slides file, or plain text file.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "account": {
+            "default": "",
+            "description": "Connected Google account email. Omit when only one account is connected.",
+            "title": "Account",
+            "type": "string"
+          },
+          "file_id": {
+            "description": "Google Drive file id from search or browse results",
+            "title": "File Id",
+            "type": "string"
+          },
+          "max_characters": {
+            "default": 20000,
+            "description": "Maximum extracted characters to return",
+            "maximum": 100000,
+            "minimum": 200,
+            "title": "Max Characters",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "file_id"
+        ],
+        "title": "ReadFileParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "file_id": {
+            "default": "",
+            "title": "File Id",
+            "type": "string"
+          },
+          "mime_type": {
+            "default": "",
+            "title": "Mime Type",
+            "type": "string"
+          },
+          "file_type": {
+            "default": "",
+            "title": "File Type",
+            "type": "string"
+          },
+          "modified_time": {
+            "default": "",
+            "title": "Modified Time",
+            "type": "string"
+          },
+          "created_time": {
+            "default": "",
+            "title": "Created Time",
+            "type": "string"
+          },
+          "size": {
+            "default": 0,
+            "title": "Size",
+            "type": "integer"
+          },
+          "owner": {
+            "default": "",
+            "title": "Owner",
+            "type": "string"
+          },
+          "parent_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Parent Ids",
+            "type": "array"
+          },
+          "drive_id": {
+            "default": "",
+            "title": "Drive Id",
+            "type": "string"
+          },
+          "web_view_link": {
+            "default": "",
+            "title": "Web View Link",
+            "type": "string"
+          },
+          "thumbnail_link": {
+            "default": "",
+            "title": "Thumbnail Link",
+            "type": "string"
+          },
+          "is_folder": {
+            "default": false,
+            "title": "Is Folder",
+            "type": "boolean"
+          },
+          "pinned": {
+            "default": false,
+            "title": "Pinned",
+            "type": "boolean"
+          },
+          "content": {
+            "default": "",
+            "title": "Content",
+            "type": "string"
+          },
+          "export_format": {
+            "default": "",
+            "title": "Export Format",
+            "type": "string"
+          },
+          "truncated": {
+            "default": false,
+            "title": "Truncated",
+            "type": "boolean"
+          },
+          "worksheets": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Worksheets",
+            "type": "array"
+          },
+          "preview_supported": {
+            "default": true,
+            "title": "Preview Supported",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "FileContent",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "google_drive"
+    },
+    {
+      "name": "read_sheet_range",
+      "description": "Read a specific worksheet and bounded A1 range from Google Sheets.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "account": {
+            "default": "",
+            "description": "Connected Google account email. Omit when only one account is connected.",
+            "title": "Account",
+            "type": "string"
+          },
+          "file_id": {
+            "description": "Google Drive file id from search or browse results",
+            "title": "File Id",
+            "type": "string"
+          },
+          "worksheet": {
+            "description": "Worksheet/tab title",
+            "title": "Worksheet",
+            "type": "string"
+          },
+          "range": {
+            "description": "A1 range inside the worksheet, e.g. A1:H100",
+            "title": "Range",
+            "type": "string"
+          },
+          "max_cells": {
+            "default": 2000,
+            "description": "Maximum cells to return",
+            "maximum": 5000,
+            "minimum": 1,
+            "title": "Max Cells",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "file_id",
+          "worksheet",
+          "range"
+        ],
+        "title": "ReadSheetRangeParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "file_id": {
+            "default": "",
+            "title": "File Id",
+            "type": "string"
+          },
+          "worksheet": {
+            "default": "",
+            "title": "Worksheet",
+            "type": "string"
+          },
+          "a1_range": {
+            "default": "",
+            "title": "A1 Range",
+            "type": "string"
+          },
+          "values": {
+            "items": {
+              "items": {},
+              "type": "array"
+            },
+            "title": "Values",
+            "type": "array"
+          },
+          "rows": {
+            "default": 0,
+            "title": "Rows",
+            "type": "integer"
+          },
+          "columns": {
+            "default": 0,
+            "title": "Columns",
+            "type": "integer"
+          },
+          "cells": {
+            "default": 0,
+            "title": "Cells",
+            "type": "integer"
+          },
+          "trimmed": {
+            "default": false,
+            "title": "Trimmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "SheetRange",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "google_drive"
+    },
+    {
+      "name": "pin_file",
+      "description": "Pin or unpin a Drive file in Imperal without changing Google Drive.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "pin.update"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "account": {
+            "default": "",
+            "description": "Connected Google account email. Omit when only one account is connected.",
+            "title": "Account",
+            "type": "string"
+          },
+          "file_id": {
+            "description": "Google Drive file id from search or browse results",
+            "title": "File Id",
+            "type": "string"
+          },
+          "pinned": {
+            "default": true,
+            "description": "True to pin, false to unpin",
+            "title": "Pinned",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "file_id"
+        ],
+        "title": "PinFileParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "account": {
+            "default": "",
+            "title": "Account",
+            "type": "string"
+          },
+          "enabled": {
+            "default": false,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "action": {
+            "default": "",
+            "title": "Action",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "SettingResult",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "google-drive-connector.pin.updated",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "google_drive"
+    },
+    {
+      "name": "list_pinned_files",
+      "description": "List files pinned in Imperal for one Google Drive account.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "account": {
+            "default": "",
+            "description": "Connected Google account email. Omit when only one account is connected.",
+            "title": "Account",
+            "type": "string"
+          },
+          "limit": {
+            "default": 50,
+            "description": "Maximum pinned files to return",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "title": "ListPinnedParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "DriveFile": {
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "title": "Id"
+              },
+              "title": {
+                "title": "Title",
+                "type": "string"
+              },
+              "kind": {
+                "default": "",
+                "title": "Kind",
+                "type": "string"
+              },
+              "subtitle": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Subtitle"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Status"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "file_id": {
+                "default": "",
+                "title": "File Id",
+                "type": "string"
+              },
+              "mime_type": {
+                "default": "",
+                "title": "Mime Type",
+                "type": "string"
+              },
+              "file_type": {
+                "default": "",
+                "title": "File Type",
+                "type": "string"
+              },
+              "modified_time": {
+                "default": "",
+                "title": "Modified Time",
+                "type": "string"
+              },
+              "created_time": {
+                "default": "",
+                "title": "Created Time",
+                "type": "string"
+              },
+              "size": {
+                "default": 0,
+                "title": "Size",
+                "type": "integer"
+              },
+              "owner": {
+                "default": "",
+                "title": "Owner",
+                "type": "string"
+              },
+              "parent_ids": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Parent Ids",
+                "type": "array"
+              },
+              "drive_id": {
+                "default": "",
+                "title": "Drive Id",
+                "type": "string"
+              },
+              "web_view_link": {
+                "default": "",
+                "title": "Web View Link",
+                "type": "string"
+              },
+              "thumbnail_link": {
+                "default": "",
+                "title": "Thumbnail Link",
+                "type": "string"
+              },
+              "is_folder": {
+                "default": false,
+                "title": "Is Folder",
+                "type": "boolean"
+              },
+              "pinned": {
+                "default": false,
+                "title": "Pinned",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ],
+            "title": "DriveFile",
+            "type": "object",
+            "x-sdl": "entity"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/DriveFile"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Page"
+          },
+          "has_more": {
+            "default": false,
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "next_page_token": {
+            "default": "",
+            "title": "Next Page Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "DriveFileList",
+        "type": "object",
+        "x-sdl": "entity-list"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "google_drive"
+    },
+    {
+      "name": "set_context_permission",
+      "description": "Enable or disable explicit Drive context permission for one account.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "context.permission.update"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "account": {
+            "default": "",
+            "description": "Connected Google account email. Omit when only one account is connected.",
+            "title": "Account",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Allow Drive to support Webbee answers for this account",
+            "title": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "title": "SetContextParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "account": {
+            "default": "",
+            "title": "Account",
+            "type": "string"
+          },
+          "enabled": {
+            "default": false,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "action": {
+            "default": "",
+            "title": "Action",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "SettingResult",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "google-drive-connector.context.updated",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "google_drive"
+    }
+  ],
+  "signals": [],
+  "schedules": [],
+  "required_scopes": [],
+  "icon_size_bytes": 361,
+  "oauth": [
+    {
+      "provider": "google",
+      "collection": "google_drive_accounts",
+      "scopes": [
+        "https://www.googleapis.com/auth/drive.readonly",
+        "https://www.googleapis.com/auth/spreadsheets.readonly"
+      ],
+      "has_hook": false
+    }
+  ],
+  "lifecycle": {
+    "health_check": {
+      "interval_sec": 60
+    }
+  },
+  "secrets": [
+    {
+      "name": "google_client_id",
+      "description": "Google OAuth client ID for Google Drive Connector.",
+      "required": true,
+      "write_mode": "user",
+      "max_bytes": 4096,
+      "scope": "app"
+    },
+    {
+      "name": "google_client_secret",
+      "description": "Google OAuth client secret for Google Drive Connector.",
+      "required": true,
+      "write_mode": "user",
+      "max_bytes": 4096,
+      "scope": "app"
+    }
+  ],
+  "panels": [
+    {
+      "panel_id": "secrets",
+      "slot": "right",
+      "title": "Secrets",
+      "tree": {},
+      "icon": "KeyRound",
+      "refresh": "manual",
+      "center_overlay": false
+    },
+    {
+      "panel_id": "drive_nav",
+      "slot": "left",
+      "title": "Google Drive",
+      "tree": {},
+      "icon": "HardDrive",
+      "refresh": "on_event:google-drive-connector.account.updated",
+      "center_overlay": false,
+      "default_width": 280,
+      "min_width": 220,
+      "max_width": 400
+    },
+    {
+      "panel_id": "drive",
+      "slot": "center",
+      "title": "Google Drive",
+      "tree": {},
+      "icon": "HardDrive",
+      "refresh": "manual",
+      "center_overlay": true
+    }
+  ]
+}
