@@ -3,3 +3,4 @@ __pycache__/
 .venv/
 *.py[cod]
 imperal.json.tmp
+client_secret_*.json
