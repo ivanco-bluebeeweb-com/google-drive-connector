@@ -9,6 +9,14 @@ import drive_files as df
 from app import ext
 
 PINS = "google_drive_pins"
+APP_ID = "google-drive-connector-bluebee"
+REDIRECT_URI = f"https://panel.imperal.io/v1/ext/{APP_ID}/oauth/google/callback"
+GOOGLE_DRIVE_API_URL = "https://console.cloud.google.com/apis/library/drive.googleapis.com"
+GOOGLE_SHEETS_API_URL = "https://console.cloud.google.com/apis/library/sheets.googleapis.com"
+GOOGLE_OAUTH_URL = "https://console.cloud.google.com/auth/overview"
+GOOGLE_CREDENTIALS_URL = "https://console.cloud.google.com/apis/credentials"
+IMPERAL_SECRETS_URL = f"https://panel.imperal.io/ext/{APP_ID}/secrets"
+OAUTH_DOCS_URL = "https://docs.imperal.io/en/sdk/decorator-oauth-reference/"
 
 
 def _email(doc) -> str:
@@ -94,12 +102,56 @@ async def drive(ctx, view="home", account="", query="", file_type="", source="al
     return await _home(ctx, doc, account)
 
 
+def _oauth_setup_page():
+    return ui.Page(title="Set up Google Drive", subtitle="One-time setup for the app owner", children=[
+        ui.Alert(
+            "Google OAuth credentials are not configured yet. Complete the steps below, then return here and connect the account.",
+            title="Setup required",
+            type="warning",
+        ),
+        ui.Section(title="1. Enable the Google APIs", children=[
+            ui.Text("Open both API pages in the same Google Cloud project and click Enable."),
+            ui.Stack(direction="h", wrap=True, children=[
+                ui.Button("Enable Google Drive API", icon="ExternalLink", on_click=ui.Open(GOOGLE_DRIVE_API_URL)),
+                ui.Button("Enable Google Sheets API", variant="secondary", icon="ExternalLink",
+                          on_click=ui.Open(GOOGLE_SHEETS_API_URL)),
+            ]),
+        ]),
+        ui.Section(title="2. Configure the OAuth consent screen", children=[
+            ui.Text("Set the app name and support email. Add yourself as a test user while the Google app is in Testing."),
+            ui.Button("Open Google Auth Platform", variant="secondary", icon="ExternalLink",
+                      on_click=ui.Open(GOOGLE_OAUTH_URL)),
+        ]),
+        ui.Section(title="3. Create an OAuth client", children=[
+            ui.Text("Create Credentials → OAuth client ID → Web application, then add this Authorized redirect URI:"),
+            ui.Code(REDIRECT_URI),
+            ui.Button("Open Google credentials", variant="secondary", icon="ExternalLink",
+                      on_click=ui.Open(GOOGLE_CREDENTIALS_URL)),
+        ]),
+        ui.Section(title="4. Save credentials in Imperal", children=[
+            ui.Text("Copy the values from Google into these app secrets: google_client_id and google_client_secret."),
+            ui.Button("Open Imperal Secrets", icon="ExternalLink", on_click=ui.Open(IMPERAL_SECRETS_URL)),
+            ui.Text("Never paste the client secret into chat or source code.", variant="caption"),
+        ]),
+        ui.Card(title="Need the technical reference?", content=ui.Text(
+            "Imperal owns the callback and token exchange; this connector only declares the provider and read-only scopes."
+        ), footer=ui.Button("Read Imperal OAuth docs", variant="ghost", icon="ExternalLink",
+                            on_click=ui.Open(OAUTH_DOCS_URL))),
+    ])
+
+
 async def _connect(ctx):
+    client_id = await ctx.secrets.get("google_client_id")
+    client_secret = await ctx.secrets.get("google_client_secret")
+    if not client_id or not client_secret:
+        return _oauth_setup_page()
     try:
         url = await ctx.oauth_authorize_url("google")
     except Exception:
         return ui.Page(title="Connect Google Drive", children=[
-            ui.Alert("Google OAuth is not configured for this connector yet.", type="error")
+            ui.Alert("Imperal could not create the Google authorization link. Recheck the OAuth client and redirect URI in the setup guide.",
+                     title="OAuth configuration error", type="error"),
+            ui.Button("Open setup guide", on_click=ui.Call("__panel__drive", view="connect")),
         ])
     return ui.Page(title="Connect Google Drive", children=[
         ui.Alert("Imperal can only read files this Google account can already access. The connector is read-only."),

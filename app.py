@@ -4,7 +4,7 @@ from imperal_sdk import ChatExtension, Extension
 
 ext = Extension(
     "google-drive-connector-bluebee",
-    version="0.1.0",
+    version="0.1.1",
     display_name="Google Drive Connector",
     description=(
         "Search, browse and read files available to connected Google accounts, "
