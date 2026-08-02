@@ -15,6 +15,15 @@ def test_every_ui_primitive_exists_in_installed_sdk():
     assert missing == []
 
 
+def test_oauth_requests_identity_and_read_only_drive_scopes():
+    source = (ROOT / "app.py").read_text()
+    assert '"openid"' in source
+    assert '"email"' in source
+    assert '"profile"' in source
+    assert "drive.readonly" in source
+    assert "spreadsheets.readonly" in source
+
+
 def test_mvp_has_no_google_mutation_requests():
     source = "\n".join(p.read_text() for p in ROOT.glob("*.py"))
     forbidden = ["ctx.http.put(", "ctx.http.patch(", "ctx.http.delete(", "/permissions"]

@@ -20,7 +20,27 @@ OAUTH_DOCS_URL = "https://docs.imperal.io/en/sdk/decorator-oauth-reference/"
 
 
 def _email(doc) -> str:
-    return str((doc.data or {}).get("email") or "")
+    return accounts.account_email(doc)
+
+
+def _label(doc) -> str:
+    return accounts.account_label(doc)
+
+
+async def _connection_problem(ctx, doc) -> bool:
+    if accounts.identity_missing(doc):
+        return True
+    settings = await accounts.setting(ctx, _email(doc))
+    return settings.get("state") == "error"
+
+
+def _reconnect_page(message: str = "This Google connection did not finish correctly or no longer has Drive access."):
+    return ui.Page(title="Reconnect Google Drive", children=[
+        ui.Alert(message, title="Connection needs attention", type="warning"),
+        ui.Text("Reconnect once to grant the updated identity and read-only Drive scopes. Google may ask for consent again."),
+        ui.Button("Reconnect Google account", icon="ExternalLink",
+                  on_click=ui.Call("__panel__drive", view="connect")),
+    ])
 
 
 async def _current(ctx, requested: str = ""):
@@ -56,7 +76,10 @@ async def drive_nav(ctx, account="", **kwargs):
         root.props["auto_action"] = ui.Call("__panel__drive", view="connect")
         return root
     active = await _current(ctx, account)
-    active_email = _email(active) if active else _email(docs[0])
+    active = active or docs[0]
+    active_email = _email(active)
+    active_label = _label(active)
+    broken = await _connection_problem(ctx, active)
     items = [
         ui.ListItem(id="home", title="Home", icon="Home",
                     on_click=ui.Call("__panel__drive", view="home", account=active_email)),
@@ -70,12 +93,14 @@ async def drive_nav(ctx, account="", **kwargs):
                     on_click=ui.Call("__panel__drive", view="accounts", account=active_email)),
     ]
     root = ui.Stack(children=[
-        ui.Text(active_email, variant="caption"), ui.List(items=items),
-        ui.Button("Connect another account", icon="Plus", variant="ghost",
+        ui.Text(active_label, variant="caption"),
+        ui.Alert("Reconnect this Google account before browsing Drive.", type="warning") if broken else ui.Text("Connected", variant="caption"),
+        ui.List(items=items),
+        ui.Button("Reconnect Google account" if broken else "Connect another account", icon="RefreshCw" if broken else "Plus", variant="ghost",
                   on_click=ui.Call("__panel__drive", view="connect")),
     ])
     if not kwargs.get("view"):
-        root.props["auto_action"] = ui.Call("__panel__drive", view="home", account=active_email)
+        root.props["auto_action"] = ui.Call("__panel__drive", view="reconnect" if broken else "home", account=active_email)
     return root
 
 
@@ -88,6 +113,8 @@ async def drive(ctx, view="home", account="", query="", file_type="", source="al
     doc = await _current(ctx, account)
     if not doc:
         return await _connect(ctx)
+    if view == "reconnect" or await _connection_problem(ctx, doc):
+        return _reconnect_page()
     account = _email(doc)
     if view == "search":
         return await _search(ctx, doc, account, query, file_type, source, modified_after)
@@ -294,8 +321,8 @@ async def _accounts(ctx, active_email):
     items = []
     for doc in docs:
         email = _email(doc); settings = await accounts.setting(ctx, email)
-        state = settings.get("state", "connected")
-        items.append(ui.ListItem(id=doc.id, title=email, subtitle=f"{state} · Context {'on' if settings.get('context_enabled') else 'off'}",
+        state = "reconnect required" if accounts.identity_missing(doc) else settings.get("state", "connected")
+        items.append(ui.ListItem(id=doc.id, title=_label(doc), subtitle=f"{state} · Context {'on' if settings.get('context_enabled') else 'off'}",
                                  selected=email == active_email, icon="User",
                                  on_click=ui.Call("switch_account", account=email)))
     return ui.Page(title="Accounts & access", children=[

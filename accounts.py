@@ -8,6 +8,23 @@ import drive_client as dc
 
 ACCOUNTS = "google_drive_accounts"
 SETTINGS = "google_drive_settings"
+UNKNOWN_EMAILS = {"", "unknown", "unknown@unknown", "google account"}
+
+
+def account_email(doc) -> str:
+    return str((doc.data or {}).get("email") or "").strip()
+
+
+def account_label(doc) -> str:
+    email = account_email(doc)
+    if email.lower() not in UNKNOWN_EMAILS:
+        return email
+    name = str((doc.data or {}).get("display_name") or "").strip()
+    return name if name and name.lower() != "unknown" else "Google account needs reconnecting"
+
+
+def identity_missing(doc) -> bool:
+    return account_email(doc).lower() in UNKNOWN_EMAILS
 
 
 async def all_accounts(ctx) -> list:
@@ -66,7 +83,19 @@ async def verify(ctx, account_doc) -> dict:
     if not out.get("ok"):
         return out
     data = out.get("data") if isinstance(out.get("data"), dict) else {}
-    return {"ok": True, "about": data, "last_checked": checked}
+    user = data.get("user") if isinstance(data.get("user"), dict) else {}
+    verified_email = str(user.get("emailAddress") or "").strip()
+    display_name = str(user.get("displayName") or "").strip()
+    repair = {}
+    if verified_email and identity_missing(account_doc):
+        repair["email"] = verified_email
+    if display_name:
+        repair["display_name"] = display_name
+    if repair:
+        await ctx.store.update(ACCOUNTS, account_doc.id, repair)
+        account_doc.data.update(repair)
+    return {"ok": True, "about": data, "email": verified_email or account_email(account_doc),
+            "last_checked": checked}
 
 
 async def activate(ctx, email: str) -> dict:

@@ -2,7 +2,7 @@
   "manifest_schema_version": 3,
   "sdk_version": "5.9.13",
   "app_id": "google-drive-connector-bluebee",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "name": "Google Drive Connector",
   "description": "Search, browse and read files available to connected Google accounts, including Shared drives and bounded Google Sheets ranges.",
   "icon": "icon.svg",
@@ -2332,6 +2332,9 @@
       "provider": "google",
       "collection": "google_drive_accounts",
       "scopes": [
+        "openid",
+        "email",
+        "profile",
         "https://www.googleapis.com/auth/drive.readonly",
         "https://www.googleapis.com/auth/spreadsheets.readonly"
       ],

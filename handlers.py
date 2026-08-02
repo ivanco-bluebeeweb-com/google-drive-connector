@@ -103,9 +103,10 @@ async def check_access(ctx, params: AccountParam) -> ActionResult:
     """Verify Drive access and report visible Shared drives."""
     resolved = await _resolved(ctx, params.account)
     if not resolved.get("ok"): return _error(resolved)
-    doc = resolved["account"]; email = str((doc.data or {}).get("email") or "")
+    doc = resolved["account"]
     verified = await accounts.verify(ctx, doc)
     if not verified.get("ok"): return _error(verified)
+    email = str(verified.get("email") or (doc.data or {}).get("email") or "")
     drives = await df.shared_drives(ctx, doc, limit=100)
     count = len(drives.get("drives", [])) if drives.get("ok") else 0
     settings = await accounts.setting(ctx, email)

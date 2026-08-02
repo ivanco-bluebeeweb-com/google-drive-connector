@@ -60,3 +60,15 @@ async def test_setup_screen_has_direct_official_and_imperal_links(ctx):
         panels.IMPERAL_SECRETS_URL,
         panels.OAUTH_DOCS_URL,
     } <= urls
+
+
+@pytest.mark.asyncio
+async def test_broken_account_is_sent_to_reconnect_instead_of_drive(ctx):
+    await ctx.store.create("google_drive_accounts", {
+        "email": "unknown", "access_token": "access-token", "is_active": True,
+    })
+
+    page = (await panels.drive(ctx, view="folder", folder_id="root")).to_dict()
+
+    assert page["props"]["title"] == "Reconnect Google Drive"
+    assert ctx.http.calls == []

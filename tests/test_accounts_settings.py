@@ -46,3 +46,30 @@ async def test_unpin_does_not_call_google(ctx, account):
     result = await handlers.pin_file(ctx, PinFileParams(account="vlad@example.com", file_id="f1", pinned=False))
     assert result.status == "success"
     assert ctx.http.calls == []
+
+
+def test_unknown_oauth_identity_has_reconnect_label():
+    class Doc:
+        data = {"email": "unknown"}
+
+    assert accounts.identity_missing(Doc()) is True
+    assert accounts.account_label(Doc()) == "Google account needs reconnecting"
+
+
+@pytest.mark.asyncio
+async def test_verify_repairs_unknown_identity_from_drive_about(ctx):
+    doc = await ctx.store.create(accounts.ACCOUNTS, {
+        "email": "unknown", "access_token": "access-token", "is_active": True,
+    })
+    ctx.http.push({
+        "user": {"emailAddress": "vlad@example.com", "displayName": "Vlad"},
+        "storageQuota": {"usage": "1"},
+    })
+
+    out = await accounts.verify(ctx, doc)
+
+    assert out["ok"] is True
+    assert out["email"] == "vlad@example.com"
+    saved = await ctx.store.get(accounts.ACCOUNTS, doc.id)
+    assert saved.data["email"] == "vlad@example.com"
+    assert saved.data["display_name"] == "Vlad"
