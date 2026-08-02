@@ -3,7 +3,7 @@ import pytest
 import accounts
 import drive_client as dc
 import handlers
-from models import PinFileParams, SetContextParams
+from models import DisconnectAccountParams, PinFileParams, SetContextParams
 
 
 @pytest.mark.asyncio
@@ -87,3 +87,17 @@ async def test_verify_repairs_unknown_identity_from_drive_about(ctx):
     saved = await ctx.store.get(accounts.ACCOUNTS, doc.id)
     assert saved.data["email"] == "vlad@example.com"
     assert saved.data["display_name"] == "Vlad"
+
+
+@pytest.mark.asyncio
+async def test_disconnect_removes_account_settings_and_pins_without_google_mutation(ctx, account):
+    await ctx.store.create(accounts.SETTINGS, {"email": "vlad@example.com", "context_enabled": True})
+    await ctx.store.create(handlers.PINS, {"email": "vlad@example.com", "file_id": "f1"})
+
+    result = await handlers.disconnect_account(ctx, DisconnectAccountParams(account_id=account.id))
+
+    assert result.status == "success"
+    assert await ctx.store.get(accounts.ACCOUNTS, account.id) is None
+    assert (await ctx.store.query(accounts.SETTINGS, where={"email": "vlad@example.com"})).data == []
+    assert (await ctx.store.query(handlers.PINS, where={"email": "vlad@example.com"})).data == []
+    assert ctx.http.calls == []

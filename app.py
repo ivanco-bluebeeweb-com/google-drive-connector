@@ -4,7 +4,7 @@ from imperal_sdk import ChatExtension, Extension
 
 ext = Extension(
     "google-drive-connector-bluebee",
-    version="0.1.2",
+    version="0.1.3",
     display_name="Google Drive Connector",
     description=(
         "Search, browse and read files available to connected Google accounts, "
@@ -67,5 +67,5 @@ async def health_check(ctx) -> dict:
         "healthy": count > 0,
         "accounts_configured": count,
         "detail": "Google account connected." if count else "No Google account connected yet.",
-        "version": "0.1.2",
+        "version": "0.1.3",
     }

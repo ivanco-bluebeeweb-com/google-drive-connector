@@ -2,7 +2,7 @@
   "manifest_schema_version": 3,
   "sdk_version": "5.9.13",
   "app_id": "google-drive-connector-bluebee",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "name": "Google Drive Connector",
   "description": "Search, browse and read files available to connected Google accounts, including Shared drives and bounded Google Sheets ranges.",
   "icon": "icon.svg",
@@ -304,6 +304,129 @@
         "x-sdl": "entity-list"
       },
       "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "google_drive"
+    },
+    {
+      "name": "disconnect_account",
+      "description": "Disconnect a Google Drive account from Imperal.",
+      "action_type": "destructive",
+      "chain_callable": true,
+      "effects": [
+        "oauth.account.disconnect"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "account_id": {
+            "description": "Stable id of the connected Google account to disconnect",
+            "title": "Account Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "account_id"
+        ],
+        "title": "DisconnectAccountParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "account": {
+            "default": "",
+            "title": "Account",
+            "type": "string"
+          },
+          "enabled": {
+            "default": false,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "action": {
+            "default": "",
+            "title": "Action",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "SettingResult",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "google-drive-connector-bluebee.account.updated",
       "background": false,
       "long_running": false,
       "scopes": [],

@@ -18,6 +18,10 @@ class AccountParam(BaseModel):
     account: str = Field("", description="Connected Google account email")
 
 
+class DisconnectAccountParams(BaseModel):
+    account_id: str = Field(..., description="Stable id of the connected Google account to disconnect")
+
+
 class ListAccountsParams(BaseModel):
     refresh: bool = Field(False, description="Verify each account against Google Drive")
 

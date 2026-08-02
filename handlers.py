@@ -8,7 +8,7 @@ import drive_files as df
 from app import chat
 from models import (
     AccessReport, AccountParam, BrowseFolderParams, DriveAccount, DriveAccountList,
-    DriveFile, DriveFileList, FileContent, FileParam, ListAccountsParams,
+    DisconnectAccountParams, DriveFile, DriveFileList, FileContent, FileParam, ListAccountsParams,
     ListPinnedParams, ListSharedDrivesParams, NoParams, PinFileParams,
     ReadFileParams, ReadSheetRangeParams, SearchFilesParams, SetContextParams,
     SettingResult, SharedDrive, SharedDriveList, SheetRange,
@@ -90,6 +90,22 @@ async def list_accounts(ctx, params: ListAccountsParams) -> ActionResult:
                                  active=bool(data.get("is_active")), state=state,
                                  context_enabled=bool(settings.get("context_enabled")), last_checked=checked))
     return _success(DriveAccountList(items=rows), f"Found {len(rows)} connected Google account(s).")
+
+
+@chat.function("disconnect_account", "Disconnect a Google Drive account from Imperal.",
+               action_type="destructive", effects=["oauth.account.disconnect"],
+               event="google-drive-connector-bluebee.account.updated", data_model=SettingResult)
+async def disconnect_account(ctx, params: DisconnectAccountParams) -> ActionResult:
+    """Delete one stored OAuth account and its local settings after confirmation."""
+    out = await accounts.disconnect(ctx, params.account_id, pins_collection=PINS)
+    if not out.get("ok"):
+        return _error(out)
+    label = str(out.get("label") or "Google account")
+    return _success(
+        SettingResult(id=params.account_id, title=label, account="", enabled=False, action="disconnected"),
+        f"Disconnected {label} from Imperal. No Google Drive files were changed.",
+        ["drive_nav", "drive"],
+    )
 
 
 @chat.function("switch_account", "Change the active Google Drive account used by default.",

@@ -32,6 +32,35 @@ async def all_accounts(ctx) -> list:
     return list(page.data)
 
 
+async def repair_identity(ctx, doc):
+    """Recover an incomplete OAuth identity from Drive's read-only about endpoint."""
+    if not identity_missing(doc):
+        return {"ok": True, "account": doc, "email": account_email(doc)}
+    out = await verify(ctx, doc)
+    if not out.get("ok") or not out.get("email"):
+        return out
+    repaired = await ctx.store.get(ACCOUNTS, doc.id)
+    return {"ok": True, "account": repaired or doc, "email": out["email"]}
+
+
+async def disconnect(ctx, account_id: str, *, pins_collection: str = "google_drive_pins") -> dict:
+    """Remove one OAuth account record and its account-scoped local data from Imperal."""
+    doc = await ctx.store.get(ACCOUNTS, account_id)
+    if not doc:
+        return dc.fail(dc.ACCOUNT_MISSING, "That Google Drive account is no longer connected.")
+    email = account_email(doc).lower()
+    if email:
+        for collection in (SETTINGS, pins_collection):
+            page = await ctx.store.query(collection, where={"email": email}, limit=100)
+            for item in page.data:
+                await ctx.store.delete(collection, item.id)
+    await ctx.store.delete(ACCOUNTS, account_id)
+    remaining = await all_accounts(ctx)
+    if remaining and not any(bool((x.data or {}).get("is_active")) for x in remaining):
+        await ctx.store.update(ACCOUNTS, remaining[0].id, {"is_active": True})
+    return {"ok": True, "account_id": account_id, "label": account_label(doc)}
+
+
 async def resolve_account(ctx, reference: str = "") -> dict:
     docs = await all_accounts(ctx)
     if not docs:

@@ -34,12 +34,25 @@ async def _connection_problem(ctx, doc) -> bool:
     return settings.get("state") == "error"
 
 
-def _reconnect_page(message: str = "This Google connection did not finish correctly or no longer has Drive access."):
+async def _reconnect_page(ctx, doc, message: str = "This Google connection did not finish correctly or no longer has Drive access."):
+    try:
+        url = await ctx.oauth_authorize_url("google", login_hint=_email(doc) or None)
+    except Exception:
+        url = ""
+    reconnect = (
+        ui.Button("Continue with Google", icon="ExternalLink", on_click=ui.Open(url))
+        if url else ui.Button("Open connection setup", icon="Settings",
+                              on_click=ui.Call("__panel__drive", view="connect"))
+    )
     return ui.Page(title="Reconnect Google Drive", children=[
         ui.Alert(message, title="Connection needs attention", type="warning"),
-        ui.Text("Reconnect once to grant the updated identity and read-only Drive scopes. Google may ask for consent again."),
-        ui.Button("Reconnect Google account", icon="ExternalLink",
-                  on_click=ui.Call("__panel__drive", view="connect")),
+        ui.Text("Continue with Google opens authorization in a new page and asks for the current read-only permissions."),
+        ui.Stack(direction="h", wrap=True, children=[
+            reconnect,
+            ui.Button("Disconnect account", icon="Unplug", variant="secondary",
+                      on_click=ui.Call("disconnect_account", account_id=doc.id)),
+        ]),
+        ui.Text("Disconnect removes only the saved Imperal connection and local connector settings. It does not delete Google Drive files.", variant="caption"),
     ])
 
 
@@ -97,7 +110,7 @@ async def drive_nav(ctx, account="", **kwargs):
         ui.Alert("Reconnect this Google account before browsing Drive.", type="warning") if broken else ui.Text("Connected", variant="caption"),
         ui.List(items=items),
         ui.Button("Reconnect Google account" if broken else "Connect another account", icon="RefreshCw" if broken else "Plus", variant="ghost",
-                  on_click=ui.Call("__panel__drive", view="connect")),
+                  on_click=ui.Call("__panel__drive", view="reconnect" if broken else "connect", account=active_email)),
     ])
     if not kwargs.get("view"):
         root.props["auto_action"] = ui.Call("__panel__drive", view="reconnect" if broken else "home", account=active_email)
@@ -113,9 +126,16 @@ async def drive(ctx, view="home", account="", query="", file_type="", source="al
     doc = await _current(ctx, account)
     if not doc:
         return await _connect(ctx)
-    if view == "reconnect" or await _connection_problem(ctx, doc):
-        return _reconnect_page()
-    account = _email(doc)
+    if accounts.identity_missing(doc):
+        repaired = await accounts.repair_identity(ctx, doc)
+        if repaired.get("ok") and repaired.get("email"):
+            doc = repaired["account"]
+            account = str(repaired["email"])
+        else:
+            return await _reconnect_page(ctx, doc, repaired.get("error", "This Google connection did not finish correctly."))
+    elif view == "reconnect" or await _connection_problem(ctx, doc):
+        return await _reconnect_page(ctx, doc)
+    account = account or _email(doc)
     if view == "search":
         return await _search(ctx, doc, account, query, file_type, source, modified_after)
     if view == "folder":
@@ -322,13 +342,22 @@ async def _accounts(ctx, active_email):
     for doc in docs:
         email = _email(doc); settings = await accounts.setting(ctx, email)
         state = "reconnect required" if accounts.identity_missing(doc) else settings.get("state", "connected")
-        items.append(ui.ListItem(id=doc.id, title=_label(doc), subtitle=f"{state} · Context {'on' if settings.get('context_enabled') else 'off'}",
-                                 selected=email == active_email, icon="User",
-                                 on_click=ui.Call("switch_account", account=email)))
+        items.append(ui.ListItem(
+            id=doc.id, title=_label(doc),
+            subtitle=f"{state} · Context {'on' if settings.get('context_enabled') else 'off'}",
+            selected=email == active_email, icon="User",
+            on_click=ui.Call("__panel__drive", view="reconnect", account=email)
+            if accounts.identity_missing(doc) else ui.Call("switch_account", account=email),
+            actions=[{
+                "icon": "Unplug",
+                "on_click": ui.Call("disconnect_account", account_id=doc.id),
+                "confirm": "Disconnect this Google account from Imperal? Google Drive files will not be changed.",
+            }],
+        ))
     return ui.Page(title="Accounts & access", children=[
         ui.List(items=items),
         ui.Button("Re-check active account", icon="RefreshCw", on_click=ui.Call("check_access", account=active_email)),
         ui.Button("Connect another account", icon="Plus", variant="secondary",
                   on_click=ui.Call("__panel__drive", view="connect")),
-        ui.Alert("Disconnecting an OAuth account is managed by the platform account connection settings.", type="info"),
+        ui.Text("Use the unplug action on an account row to disconnect it from Imperal. This never deletes Google Drive files.", variant="caption"),
     ])

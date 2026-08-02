@@ -64,6 +64,11 @@ async def test_setup_screen_has_direct_official_and_imperal_links(ctx):
 
 @pytest.mark.asyncio
 async def test_broken_account_is_sent_to_reconnect_instead_of_drive(ctx):
+    async def oauth_authorize_url(provider, **kwargs):
+        assert provider == "google"
+        return "https://accounts.google.com/o/oauth2/v2/auth?scope=drive.readonly"
+
+    ctx.oauth_authorize_url = oauth_authorize_url
     await ctx.store.create("google_drive_accounts", {
         "email": "unknown", "access_token": "access-token", "is_active": True,
     })
@@ -71,4 +76,14 @@ async def test_broken_account_is_sent_to_reconnect_instead_of_drive(ctx):
     page = (await panels.drive(ctx, view="folder", folder_id="root")).to_dict()
 
     assert page["props"]["title"] == "Reconnect Google Drive"
-    assert ctx.http.calls == []
+    nodes = list(_walk(page))
+    labels = {n.get("props", {}).get("label") for n in nodes}
+    open_urls = {
+        n.get("props", {}).get("on_click", {}).get("url")
+        for n in nodes
+        if n.get("props", {}).get("on_click", {}).get("action") == "open"
+    }
+    assert "Continue with Google" in labels
+    assert "Disconnect account" in labels
+    assert any(url and "accounts.google.com/o/oauth2/v2/auth" in url for url in open_urls)
+    assert len(ctx.http.calls) == 1

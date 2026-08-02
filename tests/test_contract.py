@@ -24,6 +24,13 @@ def test_oauth_requests_identity_and_read_only_drive_scopes():
     assert "spreadsheets.readonly" in source
 
 
+def test_disconnect_is_destructive_and_removes_only_imperal_connection():
+    source = (ROOT / "handlers.py").read_text()
+    assert '@chat.function("disconnect_account"' in source
+    assert 'action_type="destructive"' in source
+    assert 'effects=["oauth.account.disconnect"]' in source
+
+
 def test_mvp_has_no_google_mutation_requests():
     source = "\n".join(p.read_text() for p in ROOT.glob("*.py"))
     forbidden = ["ctx.http.put(", "ctx.http.patch(", "ctx.http.delete(", "/permissions"]
