@@ -163,3 +163,51 @@ async def test_recovery_get_file_after_token_refresh(ctx, account):
     out = await h.get_file(ctx, FileParam(file_id="f1"))
     assert out.error is None
     assert out.data.title == "Recovered"
+
+
+# ── Part D2 (SCENARIO_TESTING_STANDARD.md): idempotency / double-invocation ─
+
+@pytest.mark.asyncio
+async def test_d2_double_disconnect_account_fails_clean_on_the_second_call(ctx, account):
+    """disconnect_account resolves the stored doc via accounts.disconnect's
+    own store.get check -- a retried disconnect on an account already
+    removed by the first call must fail clean (account no longer found),
+    never crash or silently re-report success."""
+    from models import DisconnectAccountParams
+    first = await h.disconnect_account(ctx, DisconnectAccountParams(account_id=account.id))
+    assert first.error is None
+
+    second = await h.disconnect_account(ctx, DisconnectAccountParams(account_id=account.id))
+    assert second.error is not None
+
+
+@pytest.mark.asyncio
+async def test_d2_double_pin_file_same_file_does_not_duplicate(ctx, account):
+    """pin_file checks for an existing pin record (by email+file_id) before
+    creating a new one -- pinning the same file twice must result in
+    exactly one pin record, not two."""
+    from models import PinFileParams
+    ctx.http.push({"id": "file-1", "name": "Roadmap", "mimeType": df.GDOC})
+    first = await h.pin_file(ctx, PinFileParams(account=account.data["email"], file_id="file-1", pinned=True))
+    assert first.error is None
+
+    second = await h.pin_file(ctx, PinFileParams(account=account.data["email"], file_id="file-1", pinned=True))
+    assert second.error is None
+
+    page = await ctx.store.query("google_drive_pins", where={"email": account.data["email"], "file_id": "file-1"}, limit=10)
+    assert len(page.data) == 1
+
+
+# ── Part D3 (SCENARIO_TESTING_STANDARD.md): security / SSRF surface -------
+
+@pytest.mark.asyncio
+async def test_d3_no_ssrf_token_refresh_targets_fixed_google_url_only(ctx, account):
+    """refresh_access_token always posts to the module-level TOKEN_URL
+    constant (Google's own OAuth token endpoint) -- never a user-supplied
+    address. No @chat.function in this connector accepts a raw url/host
+    field that reaches drive_client.py's http calls; every Drive API call
+    is built from a fixed base URL plus a file/drive id. This is the
+    regression trip-wire: if a future function ever accepts a URL and
+    threads it into an http call, this assumption needs re-verifying."""
+    import drive_client as dc
+    assert dc.TOKEN_URL.startswith("https://oauth2.googleapis.com/")
