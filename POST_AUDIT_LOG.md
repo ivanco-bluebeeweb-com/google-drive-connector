@@ -5,6 +5,19 @@
 
 ---
 
+## 2026-08-19 — Plausible Scenario Testing (PST) — 8 непокрытых функций закрыты
+
+Полный метод и детали — в `SCENARIO_TESTS.md` этого приложения. Кратко:
+PST нашёл 8 chat-функций, никогда не вызывавшихся на уровне `handlers.py`
+(`browse_folder`, `check_access`, `get_file`, `list_pinned_files`,
+`list_shared_drives`, `read_file`, `search_files`, `switch_account`) —
+закрыты 13 новыми тестами в `tests/test_pst_scenarios.py`. Полный набор
+(44 теста) зелёный. Реальных багов не найдено. Отдельно проверен файл
+`client_secret_*.json`, лежащий в директории приложения: подтверждено, что
+он в `.gitignore` и не отслеживается git — не утечка, не требует действий.
+
+---
+
 ## 2026-08-19 — Сквозной пост-аудит
 
 **Что проверялось:** py_compile всех модулей; количество `@chat.function`
